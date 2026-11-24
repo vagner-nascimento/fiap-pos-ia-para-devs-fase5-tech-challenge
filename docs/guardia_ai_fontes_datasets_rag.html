@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guardiã AI — Fontes de dados, datasets e base RAG</title>
+<style>
+:root{--ink:#203040;--muted:#5d6b78;--blue:#174f78;--teal:#167d79;--pale:#eef5f8;--line:#d9e2e8;--gold:#a66b13}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7f9;color:var(--ink);font:16px/1.62 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{background:linear-gradient(135deg,#123d5b,#176c75);color:white;padding:52px 24px}
+header .wrap,main,.footer{max-width:1000px;margin:auto}
+.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;opacity:.85;font-weight:700}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.12;margin:.5rem 0 1rem}
+header p{max-width:760px;font-size:1.08rem;opacity:.94}
+main{padding:28px 22px 60px}
+nav{background:white;border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:0 0 30px}
+nav strong{display:block;margin-bottom:8px}
+nav ul{columns:2;margin:0;padding-left:20px}
+a{color:#075f91;text-decoration:underline;text-underline-offset:2px}
+a:hover{color:#0b786f}
+h2{font-size:1.65rem;color:var(--blue);margin:42px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:1.18rem;margin:25px 0 8px;color:#24566d}
+p{margin:.55rem 0 1rem}
+.lead{font-size:1.08rem}
+.card{background:white;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:16px 0;box-shadow:0 2px 8px #18384a0a}
+.tag{display:inline-block;background:#e5f3ee;color:#17634e;border-radius:999px;padding:3px 10px;font-size:.78rem;font-weight:700;margin-bottom:7px}
+.tag.gold{background:#fff2d9;color:#80520c}
+.meta{color:var(--muted);font-size:.9rem}
+ul,ol{padding-left:24px}
+li{margin:5px 0}
+table{border-collapse:collapse;width:100%;margin:14px 0 22px;background:white;font-size:.94rem}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--pale);color:#214d65}
+.callout{border-left:4px solid var(--teal);background:#edf7f5;padding:14px 18px;margin:18px 0;border-radius:0 8px 8px 0}
+.warning{border-left-color:var(--gold);background:#fff8e9}
+code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f5f7;padding:16px;border-radius:8px;border:1px solid var(--line);font-size:.86rem}
+.folder{background:white;border:1px solid var(--line);padding:18px 22px;border-radius:10px;font-family:ui-monospace,monospace;line-height:1.8}
+footer{background:#eaf0f3;color:var(--muted);padding:24px;text-align:center;font-size:.9rem}
+@media(max-width:650px){nav ul{columns:1}table{font-size:.84rem}th,td{padding:8px}}
+@media print{body{background:white}header{background:#174f78!important;print-color-adjust:exact}nav,.card{break-inside:avoid}a{color:#075f91}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="eyebrow">Pesquisa de dados e conhecimento</div>
+<h1>Guardiã AI</h1>
+<p>Fontes de datasets, casos sintéticos e documentos para preparação do Machine Learning e do RAG</p>
+<p class="meta" style="color:#e3eef2">Material de apoio ao PRD — Triagem de risco materno com apoio de IA</p>
+</div></header>
+<main>
+<nav aria-label="Sumário">
+<strong>Neste documento</strong>
+<ul>
+<li><a href="#visao">Visão geral</a></li>
+<li><a href="#ml">Datasets para Machine Learning</a></li>
+<li><a href="#demo">Dados para demonstração</a></li>
+<li><a href="#rag">Fontes para o RAG</a></li>
+<li><a href="#organizacao">Organização do RAG</a></li>
+<li><a href="#priorizacao">Priorização recomendada</a></li>
+<li><a href="#metodo">Cuidados metodológicos</a></li>
+<li><a href="#execucao">Plano de execução</a></li>
+<li><a href="#fontes">Relação de fontes</a></li>
+</ul>
+</nav>
+
+<section id="visao">
+<h2>Visão geral</h2>
+<p class="lead">Com base no PRD da Guardiã AI, a aquisição de dados deve ser organizada em três frentes:</p>
+<ol>
+<li><strong>Datasets para Machine Learning:</strong> dados estruturados de gestantes, com variáveis clínicas e classificação de risco, para treinamento, validação e comparação dos modelos.</li>
+<li><strong>Dados para demonstração:</strong> casos clínicos sintéticos, com sinais vitais, histórico, sintomas e relatos em linguagem natural, para demonstrar a jornada completa.</li>
+<li><strong>Base documental para RAG:</strong> protocolos, manuais, diretrizes e cartilhas oficiais sobre pré-natal, gestação de alto risco, hipertensão gestacional, pré-eclâmpsia e sinais de alerta.</li>
+</ol>
+<div class="callout"><strong>Diretriz:</strong> não é necessário encontrar um único dataset que contenha dados clínicos, relatos textuais e protocolos. O PRD prevê que o ML trabalhe com dados estruturados, enquanto os relatos serão analisados pela LLM e as orientações serão recuperadas de documentos oficiais.</div>
+</section>
+
+<section id="ml">
+<h2>1. Datasets para treinamento do Machine Learning</h2>
+<h3>1.1. Maternal Health Risk — UCI</h3>
+<div class="card">
+<span class="tag">Recomendado — dataset principal</span>
+<h3>UCI Machine Learning Repository — Maternal Health Risk</h3>
+<p class="meta">Aproximadamente 1.013 registros · seis variáveis preditoras · três classes</p>
+<p><a href="https://archive.ics.uci.edu/dataset/863/maternal+health+risk" target="_blank" rel="noopener">Acessar dataset e download no UCI</a></p>
+<p>Variáveis disponíveis:</p>
+<table><thead><tr><th>Variável</th><th>Conteúdo</th></tr></thead><tbody>
+<tr><td>Age</td><td>Idade</td></tr><tr><td>SystolicBP / DiastolicBP</td><td>Pressão arterial em mmHg</td></tr><tr><td>BS</td><td>Glicemia (mmol/L)</td></tr><tr><td>BodyTemp</td><td>Temperatura (°F)</td></tr><tr><td>HeartRate</td><td>Frequência cardíaca (bpm)</td></tr><tr><td>RiskLevel</td><td>Baixo, médio ou alto</td></tr>
+</tbody></table>
+<p><strong>Pontos positivos:</strong> download em CSV, licença Creative Commons CC BY 4.0, compatibilidade com classificação supervisionada e comparação de Regressão Logística, Random Forest e XGBoost.</p>
+<p><strong>Limitações:</strong> dados provenientes de Bangladesh, conjunto pequeno, ausência de relatos textuais e de histórico clínico detalhado; não representa necessariamente os critérios de classificação utilizados no SUS.</p>
+<div class="callout warning">Manter como dataset principal, conforme o PRD, mas não apresentar o resultado do modelo como clinicamente validado para a população brasileira. O modelo aprende os rótulos daquela base, não uma classificação obstétrica brasileira validada.</div>
+</div>
+
+<h3>1.2. Maternal Health Risk Assessment Dataset — Mendeley Data</h3>
+<div class="card">
+<span class="tag">Recomendado para investigação</span>
+<h3>Maternal Health Risk Assessment Dataset</h3>
+<p class="meta">Mendeley Data · versão 1 · publicado em novembro de 2024</p>
+<p><a href="https://data.mendeley.com/" target="_blank" rel="noopener">Acessar Mendeley Data e localizar pelo título</a></p>
+<p>A descrição da base indica informações como idade, pressão arterial, indicadores fisiológicos, histórico de saúde e fatores relacionados a riscos durante a gravidez.</p>
+<p><strong>Potencial:</strong> pode oferecer variáveis complementares ao UCI, especialmente histórico clínico. Antes de utilizar, baixar e inspecionar os arquivos para confirmar número de registros, variáveis, distribuição das classes, rótulos e licença. A descrição consultada não permite confirmar todos esses detalhes.</p>
+</div>
+
+<h3>1.3. Maternal Health Risk Factors Dataset — 2025</h3>
+<div class="card">
+<span class="tag">Alternativa complementar</span>
+<h3>Maternal health risk factors dataset: Clinical parameters and insights from rural Bangladesh</h3>
+<p class="meta">Data in Brief · fevereiro de 2025</p>
+<p><a href="https://doi.org/10.1016/j.dib.2025.111234" target="_blank" rel="noopener">Consultar artigo científico e informações do dataset</a></p>
+<p>A publicação descreve dados de pacientes gestantes atendidas no Kurigram General Hospital, em Bangladesh. Entre as informações descritas estão idade, pressão sistólica e diastólica, glicemia, temperatura, IMC, condições de saúde mental, histórico médico preexistente, diabetes gestacional e frequência cardíaca.</p>
+<p><strong>Avaliação:</strong> investigar se o arquivo disponibilizado possui rótulos de risco compatíveis com o problema. Não combinar registros com o UCI sem harmonizar variáveis, definições e critérios de classificação.</p>
+</div>
+
+<h3>1.4. PhysioNet — bases de dados maternos</h3>
+<div class="card">
+<h3>PhysioNet — repositório de dados biomédicos</h3>
+<p><a href="https://physionet.org/" target="_blank" rel="noopener">Acessar PhysioNet</a> · <a href="https://physionet.org/search/?q=pregnancy" target="_blank" rel="noopener">Pesquisar bases sobre gravidez</a></p>
+<p>O repositório reúne bases relacionadas à saúde materna. Entre os exemplos identificados na pesquisa estão estudos sobre medidas de gordura abdominal durante a gravidez, tecido adiposo visceral e registros eletrohisterográficos relacionados ao parto. Há também bases derivadas de registros hospitalares MIMIC, cujo acesso pode exigir credenciamento e treinamento.</p>
+<p><strong>Avaliação:</strong> fontes interessantes para evolução futura, mas com variáveis e objetivos diferentes dos necessários para substituir diretamente o UCI.</p>
+</div>
+
+<h3>1.5. SINASC — dados públicos brasileiros</h3>
+<div class="card">
+<span class="tag">Importante para contextualização brasileira</span>
+<h3>Sistema de Informações sobre Nascidos Vivos — SINASC</h3>
+<p><a href="https://opendatasus.saude.gov.br/" target="_blank" rel="noopener">Portal de Dados Abertos do SUS</a> · <a href="https://datasus.saude.gov.br/" target="_blank" rel="noopener">DATASUS</a></p>
+<p>Reúne informações sobre características maternas, idade, escolaridade, número de consultas de pré-natal, idade gestacional, tipo de parto, características do nascimento e anomalias congênitas. Os dados são disponibilizados por ano, acompanhados de dicionários de dados.</p>
+<p><strong>Limitação:</strong> não é um dataset de triagem clínica pré-natal e não oferece diretamente as medidas clínicas e os rótulos baixo/médio/alto risco necessários ao modelo.</p>
+<p><strong>Usos sugeridos:</strong> análise exploratória da realidade brasileira, indicadores demográficos, contextualização epidemiológica no relatório e apoio à geração de cenários sintéticos. Não misturar diretamente seus dados ao treinamento sem metodologia apropriada.</p>
+</div>
+</section>
+
+<section id="demo">
+<h2>2. Dados para demonstração da aplicação</h2>
+<p>O UCI fornece dados estruturados, mas não possui relatos da gestante. Recomenda-se construir uma base própria de casos sintéticos, em JSON, CSV ou SQLite, com dados clínicos, histórico, sintomas e narrativa em português.</p>
+<h3>Estrutura sugerida de um caso</h3>
+<pre>{
+  "case_id": "GEST-001",
+  "Age": 35,
+  "GestationalWeeks": 34,
+  "SystolicBP": 150,
+  "DiastolicBP": 95,
+  "BloodSugar": 145,
+  "BloodSugarUnit": "mg/dL",
+  "BodyTemp": 36.5,
+  "BodyTempUnit": "°C",
+  "HeartRate": 90,
+  "Symptoms": ["cefaleia", "visão turva", "edema"],
+  "MedicalHistory": "Histórico de hipertensão",
+  "PatientNarrative": "Relato sintético em linguagem natural",
+  "ExpectedAlerts": ["cefaleia intensa", "alteração visual"],
+  "ScenarioPurpose": "Demonstrar sinais de alerta"
+}</pre>
+<h3>Casos sugeridos</h3>
+<div class="card"><strong>Caso 01 — Pré-natal sem sinais de alerta</strong><p>Sinais vitais dentro dos parâmetros esperados, sem sintomas relevantes e evolução gestacional sem intercorrências. Demonstração de cenário habitual.</p></div>
+<div class="card"><strong>Caso 02 — Suspeita de alteração hipertensiva</strong><p>Pressão elevada, cefaleia persistente e relato de alterações visuais. Demonstração de sinais de alerta.</p></div>
+<div class="card"><strong>Caso 03 — Alteração glicêmica</strong><p>Gestante com histórico de diabetes gestacional e indicadores glicêmicos alterados.</p></div>
+<div class="card"><strong>Caso 04 — Informação insuficiente</strong><p>Relato vago, ausência de alguns dados clínicos e necessidade de revisão das informações antes da análise.</p></div>
+<div class="card"><strong>Caso 05 — Relato com múltiplos sintomas</strong><p>Gestante relata dor abdominal, mal-estar e redução da percepção dos movimentos fetais.</p></div>
+<div class="card"><strong>Caso 06 — Violência e vulnerabilidade (opcional)</strong><p>Relato indireto de violência doméstica, medo do companheiro e dificuldade de acesso ao atendimento.</p></div>
+<div class="card"><strong>Caso 07 — Erro de transcrição</strong><p>Relato com termos clínicos reconhecidos incorretamente pelo speech-to-text, para demonstrar a revisão obrigatória pela profissional.</p></div>
+<div class="callout warning"><strong>Cuidados:</strong> casos sintéticos servem para demonstração e testes funcionais. Não devem ser incorporados ao treinamento supervisionado como se fossem observações clínicas reais, nem receber rótulos clínicos arbitrários.</div>
+<p>Como objetivo de implementação, sugere-se criar aproximadamente 15 a 20 cenários sintéticos, variando sintomas, qualidade das informações, histórico e qualidade da transcrição.</p>
+</section>
+
+<section id="rag">
+<h2>3. Fontes para preparação da base de conhecimento RAG</h2>
+<p>O RAG deve localizar informações específicas em documentos oficiais, identificar a seção relevante e apresentar o trecho utilizado como referência. A recomendação é iniciar com uma coleção pequena, curada e versionada, priorizando fontes brasileiras.</p>
+
+<div class="card">
+<span class="tag">Prioridade máxima</span>
+<h3>3.1. Ministério da Saúde — Manual de Gestação de Alto Risco (2022)</h3>
+<p class="meta">Ministério da Saúde · 2022 · aproximadamente 692 páginas</p>
+<p><a href="https://bvsms.saude.gov.br/bvs/publicacoes/manual_gestacao_alto_risco.pdf" target="_blank" rel="noopener">Baixar PDF oficial</a></p>
+<p>Documento central para a base inicial. Aborda classificação e acompanhamento da gestação de alto risco, síndromes hipertensivas, pré-eclâmpsia e eclâmpsia, diabetes na gestação, complicações obstétricas e condições clínicas maternas.</p>
+<p>É especialmente adequado ao caso de demonstração de uma gestante de 34 semanas com pressão elevada, cefaleia intensa e visão embaçada. Verificar licença e condições de reutilização antes de redistribuir o PDF.</p>
+</div>
+
+<div class="card">
+<h3>3.2. Ministério da Saúde — Atenção ao Pré-Natal de Baixo Risco</h3>
+<p class="meta">Caderno de Atenção Básica nº 32 · 2012</p>
+<p><a href="https://bvsms.saude.gov.br/bvs/publicacoes/cadernos_atencao_basica_32_prenatal.pdf" target="_blank" rel="noopener">Acessar publicação oficial</a></p>
+<p>Complementa o manual de alto risco e oferece referências para situações habituais: acompanhamento pré-natal, consultas e exames, avaliação clínica, evolução gestacional, fatores de risco e orientações gerais.</p>
+<div class="callout warning">Por ser uma publicação de 2012, verificar se as recomendações continuam vigentes e se foram substituídas por documentos posteriores antes de indexá-la como orientação atual.</div>
+</div>
+
+<div class="card">
+<span class="tag">Prioridade alta</span>
+<h3>3.3. Ministério da Saúde — Caderneta Brasileira da Gestante</h3>
+<p><a href="https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/s/saude-da-mulher/saude-materna" target="_blank" rel="noopener">Acessar portal de saúde materna do Ministério da Saúde</a></p>
+<p>Material de linguagem mais acessível, útil para perguntas sobre sinais de alerta, informações importantes no acompanhamento pré-natal e cuidados gerais. Pode ajudar a demonstrar a capacidade da LLM de explicar informações técnicas em linguagem compreensível. Confirmar a edição vigente e localizar o arquivo correspondente no portal.</p>
+</div>
+
+<div class="card">
+<h3>3.4. Organização Mundial da Saúde — Recomendações para o Pré-Natal</h3>
+<p class="meta">WHO Recommendations on Antenatal Care for a Positive Pregnancy Experience · 2016</p>
+<p><a href="https://www.who.int/publications/i/item/9789241549912" target="_blank" rel="noopener">Acessar publicação oficial</a></p>
+<p>Diretriz abrangente sobre cuidados pré-natais, avaliação materna e fetal, nutrição, medidas preventivas, sintomas comuns e organização do atendimento.</p>
+<p>Complementar a versão original com atualizações específicas publicadas pela OMS. Também consultar o <a href="https://www.who.int/publications/i/item/9789240110078" target="_blank" rel="noopener">toolkit de 2025 para adaptação das recomendações de pré-natal e pós-natal</a>.</p>
+</div>
+
+<div class="card">
+<span class="tag">Prioridade alta</span>
+<h3>3.5. Diretriz Brasileira de Hipertensão Arterial — 2025</h3>
+<p><a href="https://www.scielo.br/" target="_blank" rel="noopener">Consultar publicação na SciELO</a></p>
+<p>Publicação científica brasileira com seção específica sobre distúrbios hipertensivos na gestação. Investigar o texto completo e a versão oficial para incorporar informações sobre hipertensão na gestação, hipertensão grave, pré-eclâmpsia, eclâmpsia, síndrome HELLP, predição e profilaxia.</p>
+</div>
+
+<h3>3.6. Outras instituições para investigação</h3>
+<table><thead><tr><th>Instituição</th><th>Possível utilização</th><th>Fonte</th></tr></thead><tbody>
+<tr><td>FEBRASGO</td><td>Protocolos e diretrizes de obstetrícia</td><td><a href="https://www.febrasgo.org.br/" target="_blank" rel="noopener">FEBRASGO</a></td></tr>
+<tr><td>OPAS</td><td>Recomendações e materiais de saúde materna nas Américas</td><td><a href="https://www.paho.org/pt" target="_blank" rel="noopener">OPAS</a></td></tr>
+<tr><td>OMS</td><td>Diretrizes internacionais de saúde materna</td><td><a href="https://www.who.int/health-topics/maternal-health" target="_blank" rel="noopener">OMS — Maternal health</a></td></tr>
+<tr><td>Ministério da Saúde</td><td>Manuais, notas técnicas e protocolos nacionais</td><td><a href="https://bvsms.saude.gov.br/" target="_blank" rel="noopener">Biblioteca Virtual em Saúde</a></td></tr>
+</tbody></table>
+<p>Nem todos os materiais dessas instituições devem ser considerados automaticamente vigentes. Cada documento precisa passar por validação de edição, data, aplicabilidade e eventuais substituições.</p>
+</section>
+
+<section id="organizacao">
+<h2>4. Como organizar os documentos para o RAG</h2>
+<h3>4.1. Estrutura de diretórios sugerida</h3>
+<div class="folder">
+guardiã-ai/knowledge-base/<br>
+├── 01_pre_natal/<br>
+│&nbsp;&nbsp;├── manual_pre_natal_baixo_risco.pdf<br>
+│&nbsp;&nbsp;└── caderneta_gestante.pdf<br>
+├── 02_gestacao_alto_risco/<br>
+│&nbsp;&nbsp;└── manual_gestacao_alto_risco.pdf<br>
+├── 03_sindromes_hipertensivas/<br>
+│&nbsp;&nbsp;├── hipertensao_gestacional.pdf<br>
+│&nbsp;&nbsp;└── pre_eclampsia_e_eclampsia.pdf<br>
+├── 04_sinais_alerta/<br>
+│&nbsp;&nbsp;└── sinais_de_alerta.pdf<br>
+└── 05_violencia_opcional/<br>
+&nbsp;&nbsp;&nbsp;└── protocolo_acolhimento_violencia.pdf
+</div>
+
+<h3>4.2. Metadados dos documentos</h3>
+<p>Cada trecho indexado deve manter informações que permitam identificar exatamente sua origem. Exemplo:</p>
+<pre>{
+  "document_id": "MS_ALTO_RISCO_2022",
+  "title": "Manual de Gestação de Alto Risco",
+  "institution": "Ministério da Saúde",
+  "year": 2022,
+  "version": "1.0",
+  "topic": "sindromes_hipertensivas",
+  "chapter": "Síndromes hipertensivas",
+  "page": 123,
+  "source_url": "URL_DO_DOCUMENTO",
+  "chunk_id": "MS_ALTO_RISCO_2022_123_01",
+  "content": "Trecho extraído do documento..."
+}</pre>
+<p>Preservar página original, seção e identificação da publicação permitirá que a interface mostre a fonte utilizada e ofereça acesso ao documento, atendendo ao requisito RF-07 do PRD.</p>
+
+<h3>4.3. Estratégia inicial de chunking</h3>
+<table><thead><tr><th>Configuração</th><th>Recomendação inicial</th></tr></thead><tbody>
+<tr><td>Tamanho dos chunks</td><td>500–800 tokens</td></tr>
+<tr><td>Sobreposição</td><td>80–120 tokens</td></tr>
+<tr><td>Separação</td><td>Por seção e subtítulo</td></tr>
+<tr><td>Embeddings</td><td>Modelo multilíngue</td></tr>
+<tr><td>Vector database</td><td>FAISS ou Chroma</td></tr>
+<tr><td>Recuperação</td><td>Top 5 inicialmente</td></tr>
+<tr><td>Re-ranking</td><td>Opcional, se houver tempo</td></tr>
+</tbody></table>
+<p>Não fazer chunking exclusivamente por quantidade de caracteres. Preservar a estrutura dos documentos, principalmente tabelas, critérios, listas e fluxogramas. Uma tabela de critérios de hipertensão, por exemplo, não deve ser dividida de forma que se perca a relação entre valores e definições.</p>
+
+<h3>4.4. Apresentação das fontes na resposta</h3>
+<p>Cada resposta do RAG deve apresentar:</p>
+<ol>
+<li><strong>O que foi encontrado:</strong> resumo da informação relevante.</li>
+<li><strong>De onde veio:</strong> documento, instituição, ano, página e seção.</li>
+<li><strong>Qual trecho fundamentou a resposta:</strong> citação literal curta do documento.</li>
+</ol>
+<p>Registrar também a versão do documento no log de auditoria. Isso ajuda a demonstrar que a Guardiã AI recupera informações de uma base documental controlada, em vez de responder apenas com conhecimento genérico da LLM.</p>
+</section>
+
+<section id="priorizacao">
+<h2>5. Priorização: o que utilizar na entrega</h2>
+<h3>Machine Learning</h3>
+<table><thead><tr><th>Prioridade</th><th>Fonte</th><th>Utilização</th></tr></thead><tbody>
+<tr><td>1</td><td>UCI Maternal Health Risk</td><td>Treinamento e comparação dos modelos</td></tr>
+<tr><td>2</td><td>Maternal Health Risk Factors 2025</td><td>Investigação de variáveis adicionais</td></tr>
+<tr><td>3</td><td>Mendeley Maternal Health Risk</td><td>Investigação de dados complementares</td></tr>
+<tr><td>4</td><td>SINASC</td><td>Contextualização brasileira e dados epidemiológicos</td></tr>
+</tbody></table>
+<h3>RAG</h3>
+<table><thead><tr><th>Prioridade</th><th>Documento</th><th>Utilização</th></tr></thead><tbody>
+<tr><td>1</td><td>Manual de Gestação de Alto Risco 2022</td><td>Principal referência clínica</td></tr>
+<tr><td>2</td><td>Diretriz Brasileira de Hipertensão 2025</td><td>Síndromes hipertensivas</td></tr>
+<tr><td>3</td><td>Caderneta Brasileira da Gestante</td><td>Orientações e sinais de alerta</td></tr>
+<tr><td>4</td><td>OMS — Recomendações pré-natais</td><td>Complementação internacional</td></tr>
+<tr><td>5</td><td>Manual de Pré-Natal de Baixo Risco</td><td>Acompanhamento habitual, após validação de vigência</td></tr>
+</tbody></table>
+<h3>Demonstração</h3>
+<p>Criar uma coleção própria de aproximadamente 15 a 20 casos sintéticos, contemplando gestação habitual, hipertensão gestacional, suspeita de pré-eclâmpsia, diabetes gestacional, sangramento, alterações visuais e cefaleia, dor abdominal, redução dos movimentos fetais, histórico clínico relevante, informação insuficiente, relatos ambíguos, problemas de transcrição e, se implementado, vulnerabilidade e violência.</p>
+</section>
+
+<section id="metodo">
+<h2>6. Cuidados metodológicos importantes</h2>
+<div class="card"><strong>1. Não misturar datasets indiscriminadamente.</strong><p>UCI, Mendeley e dados brasileiros possuem origens e critérios diferentes. Antes de combinar informações, harmonizar variáveis, unidades, populações e definições dos rótulos.</p></div>
+<div class="card"><strong>2. Não confundir o RiskLevel do UCI com uma classificação clínica brasileira.</strong><p>O modelo aprende a reproduzir os rótulos daquele dataset. Isso não significa que aprendeu a classificar corretamente o risco obstétrico segundo protocolos brasileiros.</p></div>
+<div class="card"><strong>3. Separar conhecimento documental de treinamento do modelo.</strong><p>Protocolos oficiais devem alimentar o RAG, não ser utilizados automaticamente como rótulos para o treinamento do classificador.</p></div>
+<div class="card"><strong>4. Cuidar da licença e da privacidade.</strong><p>Verificar condições de uso e redistribuição de cada base. Documentar que os casos sintéticos são fictícios. Não utilizar relatos reais identificáveis. Dados de saúde aparentemente anonimizados também exigem atenção às regras de proteção de dados.</p></div>
+</section>
+
+<section id="execucao">
+<h2>7. Proposta de execução</h2>
+<ol>
+<li><strong>Preparar o dataset de ML:</strong> baixar o UCI, realizar EDA, deduplicação, análise de distribuição das classes e preparar conjuntos de treino e teste.</li>
+<li><strong>Investigar datasets complementares:</strong> verificar os arquivos do Mendeley e da publicação de 2025; decidir se oferecem informações adicionais úteis.</li>
+<li><strong>Construir os casos sintéticos:</strong> criar 15–20 cenários com dados estruturados e relatos em português, incluindo os casos utilizados no vídeo.</li>
+<li><strong>Preparar a base RAG:</strong> baixar os documentos prioritários, verificar versões, extrair texto, organizar metadados e gerar embeddings.</li>
+<li><strong>Criar testes de recuperação:</strong> preparar perguntas com respostas esperadas e respectivas referências documentais para verificar se o RAG recupera os trechos corretos.</li>
+</ol>
+</section>
+
+<section id="fontes">
+<h2>8. Relação consolidada de fontes</h2>
+<p>Links reunidos para acesso rápido aos principais repositórios, artigos e documentos mencionados.</p>
+<h3>Datasets</h3>
+<ul>
+<li><a href="https://archive.ics.uci.edu/dataset/863/maternal+health+risk" target="_blank" rel="noopener">UCI — Maternal Health Risk</a></li>
+<li><a href="https://data.mendeley.com/" target="_blank" rel="noopener">Mendeley Data — pesquisar Maternal Health Risk Assessment Dataset</a></li>
+<li><a href="https://www.sciencedirect.com/" target="_blank" rel="noopener">ScienceDirect — pesquisar Maternal health risk factors dataset (2025)</a></li>
+<li><a href="https://physionet.org/search/?q=pregnancy" target="_blank" rel="noopener">PhysioNet — pesquisa por pregnancy</a></li>
+<li><a href="https://opendatasus.saude.gov.br/" target="_blank" rel="noopener">OpenDataSUS — dados públicos, incluindo SINASC</a></li>
+</ul>
+<h3>Documentos e protocolos</h3>
+<ul>
+<li><a href="https://bvsms.saude.gov.br/bvs/publicacoes/manual_gestacao_alto_risco.pdf" target="_blank" rel="noopener">Ministério da Saúde — Manual de Gestação de Alto Risco</a></li>
+<li><a href="https://bvsms.saude.gov.br/bvs/publicacoes/cadernos_atencao_basica_32_prenatal.pdf" target="_blank" rel="noopener">Ministério da Saúde — Atenção ao Pré-Natal de Baixo Risco</a></li>
+<li><a href="https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/s/saude-da-mulher/saude-materna" target="_blank" rel="noopener">Ministério da Saúde — Saúde materna e publicações</a></li>
+<li><a href="https://www.who.int/publications/i/item/9789241549912" target="_blank" rel="noopener">OMS — Recommendations on Antenatal Care</a></li>
+<li><a href="https://www.who.int/publications/i/item/9789240110078" target="_blank" rel="noopener">OMS — Toolkit for adaptation of antenatal and postnatal recommendations (2025)</a></li>
+<li><a href="https://www.febrasgo.org.br/" target="_blank" rel="noopener">FEBRASGO — Federação Brasileira das Associações de Ginecologia e Obstetrícia</a></li>
+<li><a href="https://www.paho.org/pt" target="_blank" rel="noopener">OPAS — Organização Pan-Americana da Saúde</a></li>
+<li><a href="https://bvsms.saude.gov.br/" target="_blank" rel="noopener">Biblioteca Virtual em Saúde do Ministério da Saúde</a></li>
+</ul>
+</section>
+
+<div class="callout">
+<strong>Conclusão</strong>
+<p>Para a entrega da pós-graduação, concentrar os esforços em três entregáveis: o UCI bem preparado para o ML, uma coleção de casos sintéticos para demonstrar a aplicação e uma base RAG fundamentada principalmente nos documentos do Ministério da Saúde.</p>
+<p>Essa abordagem atende ao escopo do PRD sem aumentar desnecessariamente a complexidade e permite demonstrar as três capacidades centrais da Guardiã AI: classificação, interpretação de relatos e consulta fundamentada a protocolos oficiais.</p>
+</div>
+</main>
+<footer><div class="footer">Guardiã AI · Material de pesquisa para o Tech Challenge · Links externos sujeitos a atualização pelos respectivos responsáveis.</div></footer>
+</body>
+</html>
